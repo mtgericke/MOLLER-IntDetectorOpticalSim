@@ -48,7 +48,8 @@ void MOLLEROptPhysicsList::ConstructProcess()
   theAbsorptionProcess      = new G4OpAbsorption();
   theRayleighScattering     = new G4OpRayleigh();
   theMieHGScatteringProcess = new G4OpMieHG();
-  theBoundaryProcess        = new G4OpBoundaryProcess();
+
+  theBoundaryProcess        = new MOLLEROptOpBoundaryProcess();
 
   G4ProcessManager* pManager =
                 G4OpticalPhoton::OpticalPhoton()->GetProcessManager();

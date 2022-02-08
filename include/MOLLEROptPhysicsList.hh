@@ -12,6 +12,7 @@
 #include "G4LossTableManager.hh"
 #include "G4EmSaturation.hh"
 
+#include "MOLLEROptOpBoundaryProcess.hh"
 
 #include "G4VPhysicsConstructor.hh"
 
