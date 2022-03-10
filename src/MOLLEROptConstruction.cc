@@ -81,7 +81,7 @@ G4VPhysicalVolume* MOLLEROptConstruction::Construct()
   Detector->ConstructDetector(World_Physical);
   Detector->SetCenterPositionInY(12*cm);
 
-  World_Logical->SetVisAttributes (G4VisAttributes::Invisible);
+  World_Logical->SetVisAttributes (G4VisAttributes::GetInvisible());
   
   DumpGeometricalTree(World_Physical);
   
