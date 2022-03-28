@@ -12,15 +12,15 @@ project(MOLLEROPT)
 # to build a batch mode only executable
 #
 option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" ON)
-#if(WITH_GEANT4_UIVIS)
+if(WITH_GEANT4_UIVIS)
   find_package(Geant4 REQUIRED vis_all ui_all COMPONENTS gdml qt)
   execute_process(COMMAND geant4-config --version
     OUTPUT_VARIABLE GEANT4_VERSION
     OUTPUT_STRIP_TRAILING_WHITESPACE)
   message(STATUS "Found Geant4 ${GEANT4_VERSION}")
-#else()
-#  find_package(Geant4 REQUIRED)
-#endif()
+else()
+  find_package(Geant4 REQUIRED)
+endif()
 set(CMAKE_CXX_FLAGS "-g -Wall -pg -Wno-shadow -Wno-pedantic -Wno-unused-parameter -Wno-overloaded-virtual -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-switch")
 
 #----------------------------------------------------------------------------

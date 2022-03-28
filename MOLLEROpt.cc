@@ -1,3 +1,4 @@
+#include "G4Version.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4DecayPhysics.hh"
 
@@ -20,6 +21,9 @@
 #include "MOLLEROptMaterial.hh"
 #include "MOLLEROptTrackingReadout.hh"
 
+#if G4VERSION_NUMBER >= 1070
+#include "G4OpticalParameters.hh"
+#endif
 
 #include "G4RunManager.hh"
 
@@ -70,7 +74,20 @@ int main(int argc,char** argv) {
 
   G4VModularPhysicsList* physicsList = new FTFP_BERT;
   physicsList->ReplacePhysics(new G4EmStandardPhysics_option4());
+
+  /*
   G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
+
+  #if G4VERSION_NUMBER >= 1070
+  G4OpticalParameters* params = G4OpticalParameters::Instance();
+  params->SetWLSTimeProfile("delta");
+  
+  params->SetCerenkovMaxPhotonsPerStep(100);
+  params->SetCerenkovMaxBetaChange(10.0);
+  
+  params->SetCerenkovTrackSecondariesFirst(true);
+  params->SetScintTrackSecondariesFirst(true);
+  #else
   opticalPhysics->SetWLSTimeProfile("delta");
   
   opticalPhysics->SetScintillationYieldFactor(1.0);
@@ -81,8 +98,10 @@ int main(int argc,char** argv) {
   
   opticalPhysics->SetTrackSecondariesFirst(kCerenkov, true);
   opticalPhysics->SetTrackSecondariesFirst(kScintillation, true);
+  #endif
+  */
   
-  physicsList->RegisterPhysics(opticalPhysics);
+  physicsList->RegisterPhysics(new MOLLEROptPhysicsList());
   runManager->SetUserInitialization(physicsList);
 
   
