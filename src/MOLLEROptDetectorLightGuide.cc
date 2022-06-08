@@ -9,10 +9,11 @@
              _____  PMT window _____   Upper Interface Plane
                   /           \
     upper cone   /             \ 
-           ____ /               \___   Lower Interface Plane
-                \               /
-    lower cone   \    .        /
-                  \   . .     /
+           _____/               \_____   Middle Interface Plane 
+ mid section    |		|
+           _____|               |_____   Lower Interface Plane 
+    lower cone   \        .    /
+                  \     . .   /
               _____\  .   .  /______  y = 0     
                       .   .
                       .   .
@@ -43,6 +44,7 @@ MOLLEROptDetectorLightGuide::MOLLEROptDetectorLightGuide(MOLLEROptTrackingReadou
   thisName = name+"_LG";
 
   LowerInterfacePlane     = 5.6*cm;
+  MiddleBoxHeight         = 10.0*cm;
   UpperInterfacePlane     = 25.0*cm;
   LowerConeFrontFaceAngle = 28*TMath::Pi()/180*rad;                            
   LowerConeBackFaceAngle  =  22*TMath::Pi()/180*rad;
@@ -271,7 +273,7 @@ void MOLLEROptDetectorLightGuide::DefineGeometry()
   UpperConeVertices[6] = G4TwoVector(-PMTInterfaceOpeningX/2,PMTInterfaceOpeningZ/2-QuartzToPMTOffsetInZ);
   UpperConeVertices[7] = G4TwoVector(PMTInterfaceOpeningX/2,PMTInterfaceOpeningZ/2-QuartzToPMTOffsetInZ);  
 
-
+  G4Box *GuideMiddleBoxSolid = new G4Box(thisName+"_InnerSolid",LowerIP_x,(LowerIP_pz-LowerIP_nz)/2,MiddleBoxHeight/2);
   
   //now do the outer surface ******************************************************************************************************
 
@@ -298,6 +300,8 @@ void MOLLEROptDetectorLightGuide::DefineGeometry()
   UpperConeVertices_out[5] = G4TwoVector(-(PMTInterfaceOpeningX+2.0*mm)/2,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
   UpperConeVertices_out[6] = G4TwoVector(-(PMTInterfaceOpeningX+2.0*mm)/2,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
   UpperConeVertices_out[7] = G4TwoVector((PMTInterfaceOpeningX+2.0*mm)/2,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+	
+  G4Box *GuideMiddleBoxSolid_out = new G4Box(thisName+"_OuterSolid",LowerIP_x,(LowerIP_pz-LowerIP_nz)/2,MiddleBoxHeight/2);	
 
   //******************************************************************************************************************************
 
@@ -313,13 +317,20 @@ void MOLLEROptDetectorLightGuide::DefineGeometry()
   
   
   G4RotationMatrix *rot = new G4RotationMatrix;
-  G4ThreeVector  trans = G4ThreeVector(0,0,UpperInterfacePlane/2);
-
   
+  //********************* Adding the box between the cones ************************************************************
+  
+  G4ThreeVector  trans = G4ThreeVector(0,LowerInterfacePlane*(TMath::Tan(LowerConeFrontFaceAngle) - TMath::Tan(LowerConeBackFaceAngle))/2,(LowerInterfacePlane+MiddleBoxHeight)/2);
+  
+  IntermediateInnerSolid = new G4UnionSolid(thisName+"_InnerSolid",LowerCone,GuideMiddleBoxSolid,rot,trans);
+  IntermediateOuterSolid = new G4UnionSolid(thisName+"_OuterSolid",LowerCone_out,GuideMiddleBoxSolid_out,rot,trans);
+  	
   //********************* Define the shell that is the guide **********************************************************
+	
+  trans = G4ThreeVector(0,0,UpperInterfacePlane/2 + MiddleBoxHeight); 
   
-  InnerSolid = new G4UnionSolid(thisName+"_InnerSolid",LowerCone,UpperCone,rot,trans);
-  OuterSolid = new G4UnionSolid(thisName+"_OuterSolid",LowerCone_out,UpperCone_out,rot,trans);
+  InnerSolid = new G4UnionSolid(thisName+"_InnerSolid",IntermediateInnerSolid,UpperCone,rot,trans);
+  OuterSolid = new G4UnionSolid(thisName+"_OuterSolid",IntermediateOuterSolid,UpperCone_out,rot,trans);
 
   G4SubtractionSolid *tempSolid = new G4SubtractionSolid(thisName+"_Temp_Solid",OuterSolid,InnerSolid);
   
@@ -382,37 +393,60 @@ void MOLLEROptDetectorLightGuide::ExportGeometrySTL()
   LowerConeSide2[2].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);
   LowerConeSide2[3].set(-LowerIP_x,LowerInterfacePlane,LowerIP_nz);
   LowerConeSide2[4].set(-(QuartzInterfaceOpeningX+2.0*mm)/2,0,-(QuartzInterfaceOpeningZ+2.0*mm)/2);
-
+	
+  MiddleBoxFront[0].set(LowerIP_x,LowerInterfacePlane,LowerIP_nz);
+  MiddleBoxFront[1].set(-LowerIP_x,LowerInterfacePlane,LowerIP_nz);
+  MiddleBoxFront[2].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
+  MiddleBoxFront[3].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz); 
+  MiddleBoxFront[4].set(LowerIP_x,LowerInterfacePlane,LowerIP_nz);
   
-  UpperConeFront[0].set(LowerIP_x,LowerInterfacePlane,LowerIP_nz);
-  UpperConeFront[1].set(-LowerIP_x,LowerInterfacePlane,LowerIP_nz);
-  UpperConeFront[2].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeFront[3].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeFront[4].set(LowerIP_x,LowerInterfacePlane,LowerIP_nz);
+  MiddleBoxBack[0].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);
+  MiddleBoxBack[1].set(LowerIP_x,LowerInterfacePlane,LowerIP_pz); 
+  MiddleBoxBack[2].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
+  MiddleBoxBack[3].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);    
+  MiddleBoxBack[4].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);
+  
+  MiddleBoxSide1[0].set(LowerIP_x,LowerInterfacePlane,LowerIP_nz);
+  MiddleBoxSide1[1].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
+  MiddleBoxSide1[2].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
+  MiddleBoxSide1[3].set(LowerIP_x,LowerInterfacePlane,LowerIP_pz);
+  MiddleBoxSide1[4].set(LowerIP_x,LowerInterfacePlane,LowerIP_nz);
+  
+  MiddleBoxSide2[0].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);
+  MiddleBoxSide2[1].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
+  MiddleBoxSide2[2].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
+  MiddleBoxSide2[3].set(-LowerIP_x,LowerInterfacePlane,LowerIP_nz);
+  MiddleBoxSide2[4].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);	
+  
+  UpperConeFront[0].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
+  UpperConeFront[1].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
+  UpperConeFront[2].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeFront[3].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeFront[4].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
 
-  UpperConeBack[0].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);
-  UpperConeBack[1].set(LowerIP_x,LowerInterfacePlane,LowerIP_pz);
-  UpperConeBack[2].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeBack[3].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeBack[4].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);
+  UpperConeBack[0].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
+  UpperConeBack[1].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
+  UpperConeBack[2].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeBack[3].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeBack[4].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
 
-  UpperConeSide1[0].set(LowerIP_x,LowerInterfacePlane,LowerIP_nz);
-  UpperConeSide1[1].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeSide1[2].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeSide1[3].set(LowerIP_x,LowerInterfacePlane,LowerIP_pz);
-  UpperConeSide1[4].set(LowerIP_x,LowerInterfacePlane,LowerIP_nz);
+  UpperConeSide1[0].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
+  UpperConeSide1[1].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeSide1[2].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeSide1[3].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
+  UpperConeSide1[4].set(LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
 
-  UpperConeSide2[0].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);
-  UpperConeSide2[1].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeSide2[2].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeSide2[3].set(-LowerIP_x,LowerInterfacePlane,LowerIP_nz);
-  UpperConeSide2[4].set(-LowerIP_x,LowerInterfacePlane,LowerIP_pz);
+  UpperConeSide2[0].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
+  UpperConeSide2[1].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeSide2[2].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeSide2[3].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_nz);
+  UpperConeSide2[4].set(-LowerIP_x,LowerInterfacePlane+MiddleBoxHeight,LowerIP_pz);
 
-  UpperConeTop[0].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeTop[1].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeTop[2].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeTop[3].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
-  UpperConeTop[4].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeTop[0].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeTop[1].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeTop[2].set(-(PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeTop[3].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
+  UpperConeTop[4].set((PMTInterfaceOpeningX+2.0*mm)/2,UpperInterfacePlane+MiddleBoxHeight,-(PMTInterfaceOpeningZ+2.0*mm)/2-QuartzToPMTOffsetInZ);
 
   STLFile.open("LightGuideGeom.stl");
   STLFile << std::scientific;
@@ -428,6 +462,14 @@ void MOLLEROptDetectorLightGuide::ExportGeometrySTL()
   WriteSTLFacet(&LowerConeBack[2]);
   WriteSTLFacet(LowerConeSide2);
   WriteSTLFacet(&LowerConeSide2[2]);
+  WriteSTLFacet(MiddleBoxFront);
+  WriteSTLFacet(&MiddleBoxFront[2]);
+  WriteSTLFacet(MiddleBoxSide1);
+  WriteSTLFacet(&MiddleBoxSide1[2]);
+  WriteSTLFacet(MiddleBoxBack);
+  WriteSTLFacet(&MiddleBoxBack[2]);
+  WriteSTLFacet(MiddleBoxSide2);
+  WriteSTLFacet(&MiddleBoxSide2[2]);	
   WriteSTLFacet(UpperConeFront);
   WriteSTLFacet(&UpperConeFront[2]);
   WriteSTLFacet(UpperConeBack);

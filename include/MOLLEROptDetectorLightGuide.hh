@@ -33,6 +33,7 @@ public:
 
 
   void SetLowerInterfacePlane(G4double LowerPlane){LowerInterfacePlane = LowerPlane;};
+  void SetMiddleBoxHeight(G4double MiddlePlane){MiddleBoxHeight = MiddlePlane;};
   void SetUpperInterfacePlane(G4double UpperPlane){UpperInterfacePlane = UpperPlane; GuideTotalLength = UpperPlane;};
   void SetLowerConeFrontFaceAngle(G4double angle) {LowerConeFrontFaceAngle = angle;};
   void SetLowerConeBackFaceAngle(G4double angle)  {LowerConeBackFaceAngle = angle;};
@@ -48,6 +49,7 @@ public:
   void SetPMTOpeningRadius(G4double val)          {PMTOpeningRadius = val;};
 
   G4double GetCurrentLowerInterfacePlane()     {return LowerInterfacePlane;};
+  G4double GetCurrentMiddleBoxHeight()         {return MiddleBoxHeight;};
   G4double GetCurrentUpperInterfacePlane()     {return UpperInterfacePlane;};
   G4double GetCurrentLowerConeFrontFaceAngle() {return LowerConeFrontFaceAngle;};
   G4double GetCurrentLowerConeBackFaceAngle()  {return LowerConeBackFaceAngle;};
@@ -89,6 +91,11 @@ private:
   MOLLEROptMaterial*  Materials;
 
   G4VPhysicalVolume* Mother;
+  
+  G4Box*              GuideMiddleBoxSolid; 
+  G4Box*              GuideMiddleBoxSolid_out; 
+  G4UnionSolid*	      IntermediateInnerSolid; 
+  G4UnionSolid*	      IntermediateOuterSolid; 
 
   G4Tubs*            GuideTopCutoutSolid;
   G4Box*             GuideTopBoxSolid;
@@ -140,6 +147,12 @@ private:
   G4ThreeVector LowerConeBack[5];
   G4ThreeVector LowerConeSide1[5];
   G4ThreeVector LowerConeSide2[5];
+  
+  G4ThreeVector MiddleBoxBottom[5];
+  G4ThreeVector MiddleBoxFront[5];
+  G4ThreeVector MiddleBoxBack[5];
+  G4ThreeVector MiddleBoxSide1[5];
+  G4ThreeVector MiddleBoxSide2[5];
          
   G4ThreeVector UpperConeFront[5];
   G4ThreeVector UpperConeBack[5];
@@ -148,6 +161,7 @@ private:
   G4ThreeVector UpperConeTop[5];
 
   G4double LowerInterfacePlane; //See function SetInterfacePlanes(..) for explanation 
+  G4double MiddleBoxHeight;     // Straight Middle Section
   G4double UpperInterfacePlane;
 
   G4double LowerConeFrontFaceAngle; //Front meaning beam upstream and the angle (theta)

@@ -21,6 +21,7 @@ struct DesignParameters{
   G4double QuartzSizeZ;
   
   G4double LowerInterfacePlane;
+  G4double MiddleBoxHeight;
   G4double UpperInterfacePlane;
   G4double LowerConeFrontFaceAngle;
   G4double LowerConeBackFaceAngle;
@@ -71,6 +72,7 @@ public:
   void SetLightGuideOffsetInZ(G4double z);
   
   void SetLowerInterfacePlane(G4double LowerPlane);
+  void SetMiddleBoxHeight(G4double MiddlePlane);
   void SetUpperInterfacePlane(G4double UpperPlane);
   void SetLowerConeFrontFaceAngle(G4double angle) ; //in radians
   void SetLowerConeBackFaceAngle(G4double angle);

@@ -28,6 +28,7 @@ private:
   G4UIcmdWithADoubleAndUnit* DetZPositionCmd;
 
   G4UIcmdWithADoubleAndUnit* LightGuideUpperInterfaceCmd;
+  G4UIcmdWithADoubleAndUnit* LightGuideMiddleBoxCmd;
   G4UIcmdWithADoubleAndUnit* LightGuideLowerInterfaceCmd;
   G4UIcmdWithADoubleAndUnit* LightGuideLowerConeFrontAngleCmd;
   G4UIcmdWithADoubleAndUnit* LightGuideLowerConeBackAngleCmd;
